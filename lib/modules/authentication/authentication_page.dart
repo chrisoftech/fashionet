@@ -24,6 +24,8 @@ class AuthenticationPage extends StatefulWidget {
 class _AuthenticationPageState extends State<AuthenticationPage> {
   AuthState _authState = AuthState.Verification;
 
+  UserRepository get _userRepository => widget._userRepository;
+
   Widget _buildVerifyPhoneNumberForm() {
     return VerifyPhoneNumberForm(
       userRepository: widget._userRepository,
@@ -42,23 +44,50 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     return LoginForm(
       userRepository: widget._userRepository,
       onLoginSuccess: (bool isLoginSuccessfull) {
-        print(isLoginSuccessfull);
+        print('Login is $isLoginSuccessfull');
         // Navigator
       },
     );
   }
 
+  Widget _buildAuthenticationPageBody(
+      {@required double deviceHeight, @required double deviceWidth}) {
+    return Container(
+      height: deviceHeight,
+      width: deviceWidth,
+      padding: EdgeInsets.all(20.0),
+      child: Column(
+        children: <Widget>[
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(height: 30.0),
+                _authState == AuthState.Verification
+                    ? _buildVerifyPhoneNumberForm()
+                    : _buildLoginWithPhoneNumberForm(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final double _deviceHeight = MediaQuery.of(context).size.height;
+    final double _deviceWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Login Page')),
+      backgroundColor: Theme.of(context).primaryColor,
+      // appBar: AppBar(title: Text('Login Page')),
       body: BlocProvider<LoginBloc>(
         builder: (BuildContext context) => LoginBloc(
             userRepository: widget._userRepository,
             authenticationBloc: BlocProvider.of<AuthenticationBloc>(context)),
-        child: _authState == AuthState.Verification
-            ? _buildVerifyPhoneNumberForm()
-            : _buildLoginWithPhoneNumberForm(),
+        child: _buildAuthenticationPageBody(
+            deviceHeight: _deviceHeight, deviceWidth: _deviceWidth),
       ),
     );
   }
