@@ -48,13 +48,13 @@ class UserRepository {
 
     print(phoneNumber);
 
-    await _firebaseAuth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: const Duration(seconds: 5),
-        verificationCompleted: verificationCompleted,
-        verificationFailed: verificationFailed,
-        codeSent: codeSent,
-        codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
+    // await _firebaseAuth.verifyPhoneNumber(
+    //     phoneNumber: phoneNumber,
+    //     timeout: const Duration(seconds: 5),
+    //     verificationCompleted: verificationCompleted,
+    //     verificationFailed: verificationFailed,
+    //     codeSent: codeSent,
+    //     codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
 
     // return '_verificationId';
     return _verificationId;
@@ -69,14 +69,14 @@ class UserRepository {
         smsCode: verificationCode,
       );
 
-      final FirebaseUser user =
-          await _firebaseAuth.signInWithCredential(credential);
-      final FirebaseUser currentUser = await _firebaseAuth.currentUser();
-      assert(user.uid == currentUser.uid);
+      // final FirebaseUser user =
+      //     await _firebaseAuth.signInWithCredential(credential);
+      // final FirebaseUser currentUser = await _firebaseAuth.currentUser();
+      // assert(user.uid == currentUser.uid);
 
-      user != null
-          ? print('Successfully signed in, uid: ' + user.uid)
-          : print('Sign in failed');
+      // user != null
+      //     ? print('Successfully signed in, uid: ' + user.uid)
+      //     : print('Sign in failed');
     } catch (e) {
       print(e.toString());
       // throw(e.toString());

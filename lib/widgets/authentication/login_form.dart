@@ -1,3 +1,4 @@
+import 'package:fashionet/modules/modules.dart';
 import 'package:flutter/material.dart';
 import 'package:fashionet/repositories/repositories.dart';
 import 'package:fashionet/blocs/blocs.dart';
@@ -126,8 +127,12 @@ class _LoginFormState extends State<LoginForm> {
       borderRadius: BorderRadius.circular(30.0),
       child: InkWell(
         borderRadius: BorderRadius.circular(30.0),
-        onTap: () async {
-          Navigator.of(context).pushNamed('/home');
+        onTap: () {
+          // onLoginWithCredentialsButtonPressed();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => ProfileFormWizard()));
         },
         child: Container(
           height: 50.0,
