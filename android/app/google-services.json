@@ -42,43 +42,6 @@
           ]
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:346576487079:android:17257bd7f25241b8",
-        "android_client_info": {
-          "package_name": "com.example.fashionnet"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "346576487079-eptpgp2hq0hu1ffe5scegc832pumpjof.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.fashionnet",
-            "certificate_hash": "a46e2d2c055d2838c31c09e0e395b01fa5da96f3"
-          }
-        },
-        {
-          "client_id": "346576487079-ui0nr9enp33jr4qbl79rbd8qkrl5evuh.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDZmT4f2utZFCU3xyoyI84Io6abKKDwbuQ"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "346576487079-ui0nr9enp33jr4qbl79rbd8qkrl5evuh.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
     }
   ],
   "configuration_version": "1"
