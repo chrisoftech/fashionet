@@ -49,7 +49,8 @@ class MyApp extends StatelessWidget {
         } else if (state is Authenticated) {
           return HomePage(phoneNumber: state.phoneNumber);
         } else if (state is Unauthenticated) {
-          return AuthenticationPage(userRepository: _userRepository);
+          return IntroPage(userRepository: _userRepository);
+          // return AuthenticationPage(userRepository: _userRepository);
         }
       },
     );
