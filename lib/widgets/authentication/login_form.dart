@@ -1,7 +1,6 @@
-import 'package:fashionet/modules/modules.dart';
-import 'package:flutter/material.dart';
-import 'package:fashionet/repositories/repositories.dart';
 import 'package:fashionet/blocs/blocs.dart';
+import 'package:fashionet/repositories/repositories.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginForm extends StatefulWidget {
@@ -31,17 +30,14 @@ class _LoginFormState extends State<LoginForm> {
   Function(bool) get _onLoginSuccess => widget._onLoginSuccess;
   Function(bool) get _onRequestForNewCode => widget._onRequestForNewCode;
 
-  GlobalKey<State> _formKey = GlobalKey<State>();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _verificationCodeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    _loginBloc = LoginBloc(
-      userRepository: _userRepository,
-      authenticationBloc: BlocProvider.of<AuthenticationBloc>(context),
-    );
+    _loginBloc = LoginBloc(userRepository: _userRepository);
   }
 
   bool isVerificationButtonEnabled({LoginState state}) {
@@ -49,6 +45,8 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void onLoginWithCredentialsButtonPressed() {
+    if (!_formKey.currentState.validate()) return;
+
     _loginBloc.onLoginWithCredentialsPressed(
         verificationCode: _verificationCodeController.text);
   }
@@ -102,6 +100,11 @@ class _LoginFormState extends State<LoginForm> {
         counterText: '',
         border: InputBorder.none,
       ),
+      validator: (String value) {
+        return value.length < 6
+            ? 'Please enter the verification code sent to your number!'
+            : null;
+      },
     );
   }
 
@@ -127,13 +130,7 @@ class _LoginFormState extends State<LoginForm> {
       borderRadius: BorderRadius.circular(30.0),
       child: InkWell(
         borderRadius: BorderRadius.circular(30.0),
-        onTap: () {
-          // onLoginWithCredentialsButtonPressed();
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => ProfileFormWizard()));
-        },
+        onTap: onLoginWithCredentialsButtonPressed,
         child: Container(
           height: 50.0,
           width: 200.0,
@@ -186,7 +183,7 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    // final _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    final _user = BlocProvider.of<AuthenticationBloc>(context);
     // final double _deviceHeight = MediaQuery.of(context).size.height;
     // final double _deviceWidth = MediaQuery.of(context).size.width;
 
@@ -222,38 +219,14 @@ class _LoginFormState extends State<LoginForm> {
             );
         }
         if (state.isSuccess) {
-          print('LoggedIn successfully');
+          _user.onLoggedIn();
+          Navigator.of(context).pop();
           _onLoginSuccess(true);
         }
       },
       child: BlocBuilder(
         bloc: _loginBloc,
         builder: (BuildContext context, LoginState state) {
-          // return Container(
-          //   height: _deviceHeight,
-          //   width: _deviceWidth,
-          //   child: Center(
-          //     child: SingleChildScrollView(
-          //       child: Form(
-          //         key: _formKey,
-          //         child: Column(
-          //           children: <Widget>[
-          //             TextFormField(
-          //               controller: _verificationCodeController,
-          //               decoration: InputDecoration(),
-          //             ),
-          //             RaisedButton(
-          //               child: Text('Verify code'),
-          //               onPressed: isVerificationButtonEnabled(state: state)
-          //                   ? onLoginWithCredentialsButtonPressed
-          //                   : null,
-          //             )
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // );
           return _buildLoginForm();
         },
       ),

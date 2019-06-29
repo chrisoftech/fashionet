@@ -1,5 +1,9 @@
+import 'package:fashionet/blocs/blocs.dart';
+import 'package:fashionet/repositories/repositories.dart';
 import 'package:fashionet/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
 
 class ProfileFormWizard extends StatefulWidget {
   @override
@@ -7,10 +11,28 @@ class ProfileFormWizard extends StatefulWidget {
 }
 
 class _ProfileFormWizardState extends State<ProfileFormWizard> {
+  ProfileRepository _profileRepository;
+
+  AuthenticationBloc _authenticationBloc;
+  ProfileAvatarBloc _profileAvatarBloc;
+
   final _pageController = PageController(initialPage: 0, keepPage: true);
   PageView _pageView;
 
   int _currentWizardPageIndex = 0;
+
+  Asset _selectedProfileImage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _profileRepository = ProfileRepository();
+
+    _authenticationBloc = BlocProvider.of<AuthenticationBloc>(context);
+    _profileAvatarBloc =
+        ProfileAvatarBloc(profileRepository: _profileRepository);
+  }
 
   @override
   void dispose() {
@@ -21,7 +43,7 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
 
   void _jumpToPreviousPage() {
     if (_currentWizardPageIndex == 0) {
-      Navigator.of(context).pop();
+      _authenticationBloc.onLoggedOut();
     } else {
       _pageController.jumpToPage(--_currentWizardPageIndex);
     }
@@ -35,6 +57,30 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
     }
   }
 
+  void onUploadProfileImageButtonClicked() {
+    _profileAvatarBloc.onUploadProfileImageButtonClicked(
+        profileAvatarAsset: _selectedProfileImage);
+  }
+
+  void onContinueButtonClicked() {
+    if (_currentWizardPageIndex == 0) {
+      onUploadProfileImageButtonClicked();
+    } else {
+      print('Next Page!');
+    }
+  }
+
+  Widget _buildProfileAvatarForm() {
+    return ProfileImageForm(
+      profileRepository: _profileRepository,
+      profileAvatarBloc: _profileAvatarBloc,
+      jumpToNextPage: _jumpToNextPage,
+      onUploadProfileImage: (Asset selectedProfileImage) {
+        _selectedProfileImage = selectedProfileImage;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _pageView = PageView(
@@ -46,7 +92,7 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
         });
       },
       children: <Widget>[
-        ProfileImageForm(),
+        _buildProfileAvatarForm(),
         ProfileBioForm(),
         ProfileBusinessForm(),
         ProfileContactForm(),
@@ -56,12 +102,16 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      body: Stack(
-        children: <Widget>[
-          _pageView,
-          _buildFormWizardIndicator(),
-          _buildFormWizardActions()
-        ],
+      body: BlocProvider<ProfileAvatarBloc>(
+        builder: (BuildContext context) =>
+            ProfileAvatarBloc(profileRepository: _profileRepository),
+        child: Stack(
+          children: <Widget>[
+            _pageView,
+            _buildFormWizardIndicator(),
+            _buildFormWizardActions()
+          ],
+        ),
       ),
     );
   }
@@ -129,15 +179,17 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            FlatButton(
-              splashColor: Colors.white30,
-              child: Text(
-                _currentWizardPageIndex == 0 ? 'Logout' : 'Previous',
-                style: TextStyle(
-                    color: Theme.of(context).accentColor, fontSize: 20.0),
-              ),
-              onPressed: _jumpToPreviousPage,
-            ),
+            _currentWizardPageIndex > 0
+                ? Container()
+                : FlatButton(
+                    splashColor: Colors.white30,
+                    child: Text(
+                      _currentWizardPageIndex == 0 ? 'Logout' : 'Previous',
+                      style: TextStyle(
+                          color: Theme.of(context).accentColor, fontSize: 20.0),
+                    ),
+                    onPressed: _jumpToPreviousPage,
+                  ),
             FlatButton(
               splashColor: Colors.white30,
               child: Text(
@@ -145,7 +197,7 @@ class _ProfileFormWizardState extends State<ProfileFormWizard> {
                 style: TextStyle(
                     color: Theme.of(context).accentColor, fontSize: 20.0),
               ),
-              onPressed: _jumpToNextPage,
+              onPressed: onContinueButtonClicked,
             ),
           ],
         ),

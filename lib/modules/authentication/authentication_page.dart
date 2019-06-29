@@ -131,9 +131,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body: BlocProvider<LoginBloc>(
-        builder: (BuildContext context) => LoginBloc(
-            userRepository: widget._userRepository,
-            authenticationBloc: BlocProvider.of<AuthenticationBloc>(context)),
+        builder: (BuildContext context) =>
+            LoginBloc(userRepository: widget._userRepository),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
           child: Stack(

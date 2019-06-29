@@ -15,12 +15,12 @@ class Uninitialized extends AuthenticationState {
 }
 
 class Authenticated extends AuthenticationState {
-  final String phoneNumber;
+  // final String phoneNumber;
 
-  Authenticated({@required this.phoneNumber}) : super([phoneNumber]);
+  // Authenticated({@required this.phoneNumber}) : super([phoneNumber]);
 
   @override
-  String toString() => 'Authenticated { phoneNumber: $phoneNumber }';
+  String toString() => 'Authenticated';
 }
 
 class Unauthenticated extends AuthenticationState {
@@ -90,8 +90,7 @@ class AuthenticationBloc
     try {
       final isSignedIn = await _userRepository.isSignedIn();
       if (isSignedIn) {
-        final phoneNumber = await _userRepository.getUser();
-        yield Authenticated(phoneNumber: phoneNumber);
+        yield Authenticated();
       } else {
         yield Unauthenticated();
       }
@@ -101,7 +100,7 @@ class AuthenticationBloc
   }
 
   Stream<AuthenticationState> _mapLoggedInToState() async* {
-    yield Authenticated(phoneNumber: await _userRepository.getUser());
+    yield Authenticated();
   }
 
   Stream<AuthenticationState> _mapLoggedOutToState() async* {

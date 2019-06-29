@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatelessWidget {
-  final String _phoneNumber;
+  // final String _phoneNumber;
 
-  const HomePage({Key key, @required String phoneNumber})
-      : _phoneNumber = phoneNumber,
-        super(key: key);
+  // const HomePage({Key key, @required String phoneNumber})
+  //     : _phoneNumber = phoneNumber,
+  //       super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text(
-              'Welcome $_phoneNumber',
+              'Welcome',
               style: TextStyle(
                 fontSize: 20.0,
               ),

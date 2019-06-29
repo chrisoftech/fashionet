@@ -1,8 +1,28 @@
+import 'package:fashionet/blocs/blocs.dart';
+import 'package:fashionet/repositories/repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class ProfileImageForm extends StatefulWidget {
+  final ProfileRepository _profileRepository;
+  final ProfileAvatarBloc _profileAvatarBloc;
+  final Function(Asset) onUploadProfileImage;
+  final Function jumpToNextPage;
+
+  const ProfileImageForm(
+      {Key key,
+      @required ProfileRepository profileRepository,
+      @required ProfileAvatarBloc profileAvatarBloc,
+      @required this.onUploadProfileImage,
+      @required this.jumpToNextPage})
+      : assert(profileRepository != null),
+        assert(profileAvatarBloc != null),
+        _profileRepository = profileRepository,
+        _profileAvatarBloc = profileAvatarBloc,
+        super(key: key);
+
   @override
   _ProfileImageFormState createState() => _ProfileImageFormState();
 }
@@ -10,6 +30,23 @@ class ProfileImageForm extends StatefulWidget {
 class _ProfileImageFormState extends State<ProfileImageForm> {
   List<Asset> images = List<Asset>();
   String _error = 'No Error Dectected';
+
+  ProfileRepository get _profileRepository => widget._profileRepository;
+  ProfileAvatarBloc get _profileAvatarBloc => widget._profileAvatarBloc;
+  Function(Asset) get _onUploadProfileImage => widget.onUploadProfileImage;
+  Function get _jumpToNextPage => widget.jumpToNextPage;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   _profileAvatarBloc =
+  //       ProfileAvatarBloc(profileRepository: _profileRepository);
+  // }
+
+  bool isAvatarUploadButtonEnabled({@required ProfileAvatarState state}) {
+    return !state.isSubmitting;
+  }
 
   Future<void> deleteAssets() async {
     await MultiImagePicker.deleteImages(assets: images);
@@ -45,6 +82,8 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
 
     setState(() {
       images = resultList;
+      if (images.isNotEmpty) 
+        _onUploadProfileImage(images[0]);
       _error = error;
     });
   }
@@ -133,17 +172,55 @@ class _ProfileImageFormState extends State<ProfileImageForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Container(
-          height: 250.0,
-          width: 400.0,
-          child: Column(
-            children: <Widget>[
-              _buildImageContainer(),
-              SizedBox(height: 20.0),
-              _buildImageMessage(context: context),
-            ],
+    return BlocListener(
+      bloc: _profileAvatarBloc,
+      listener: (BuildContext context, ProfileAvatarState state) {
+        if (state.isFailure) {
+          Scaffold.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Text('Image upload failure'), Icon(Icons.error)],
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+        }
+        if (state.isSubmitting) {
+          Scaffold.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Uploading profile avatar'),
+                    CircularProgressIndicator()
+                  ],
+                ),
+                // backgroundColor: Colors.red,
+              ),
+            );
+        }
+        if (state.isSuccess) {
+          _jumpToNextPage();
+          print('Profile avatar upload successful');
+        }
+      },
+      child: Container(
+        child: Center(
+          child: Container(
+            height: 250.0,
+            width: 400.0,
+            child: Column(
+              children: <Widget>[
+                _buildImageContainer(),
+                SizedBox(height: 20.0),
+                _buildImageMessage(context: context),
+              ],
+            ),
           ),
         ),
       ),

@@ -47,11 +47,10 @@ class MyApp extends StatelessWidget {
         if (state is Uninitialized) {
           return SplashPage();
         } else if (state is Authenticated) {
-          return HomePage(phoneNumber: state.phoneNumber);
-          // return ProfileFormWizard();
+          // return HomePage();
+          return ProfileFormWizard();
         } else if (state is Unauthenticated) {
           return IntroPage(userRepository: _userRepository);
-          // return AuthenticationPage(userRepository: _userRepository);
         }
       },
     );

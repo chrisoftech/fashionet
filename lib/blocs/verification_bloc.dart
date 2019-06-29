@@ -92,12 +92,15 @@ abstract class VerificationEvent extends Equatable {
 
 class VerifyPhoneNumberButtonPressed extends VerificationEvent {
   final String phoneNumber;
+  final String countryIsoCode;
 
-  VerifyPhoneNumberButtonPressed({@required this.phoneNumber})
-      : super([phoneNumber]);
+  VerifyPhoneNumberButtonPressed(
+      {@required this.phoneNumber, @required this.countryIsoCode})
+      : super([phoneNumber, countryIsoCode]);
 
   @override
-  String toString() => 'Submitted { phoneNumber: $phoneNumber }';
+  String toString() =>
+      'Submitted { phoneNumber: $phoneNumber, countryIsoCode: $countryIsoCode }';
 }
 
 // login bloc
@@ -111,8 +114,10 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   @override
   VerificationState get initialState => VerificationState.empty();
 
-  void onVerifyPhoneNumberButtonPressed({@required String phoneNumber}) {
-    dispatch(VerifyPhoneNumberButtonPressed(phoneNumber: phoneNumber));
+  void onVerifyPhoneNumberButtonPressed(
+      {@required String phoneNumber, @required String countryIsoCode}) {
+    dispatch(VerifyPhoneNumberButtonPressed(
+        phoneNumber: phoneNumber, countryIsoCode: countryIsoCode));
   }
 
   @override
@@ -121,16 +126,18 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
   ) async* {
     if (event is VerifyPhoneNumberButtonPressed) {
       yield* _mapVerifyPhoneNumberButtonPressedToState(
-          phoneNumber: event.phoneNumber);
+          phoneNumber: event.phoneNumber, countryIsoCode: event.countryIsoCode);
     }
   }
 
   Stream<VerificationState> _mapVerifyPhoneNumberButtonPressedToState(
-      {@required String phoneNumber}) async* {
+      {@required String phoneNumber, @required String countryIsoCode}) async* {
     yield VerificationState.loading();
 
     try {
-      await _userRepository.verifyPhoneNumber(phoneNumber: phoneNumber);
+      // await Future.delayed(Duration(seconds: 10));
+      await _userRepository.verifyPhoneNumber(
+          phoneNumber: phoneNumber, countryIsoCode: countryIsoCode);
       yield VerificationState.success();
     } catch (e) {
       yield VerificationState.failure();

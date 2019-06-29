@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:libphonenumber/libphonenumber.dart';
 import 'package:meta/meta.dart';
 
 class UserRepository {
@@ -17,69 +18,75 @@ class UserRepository {
     return (await _firebaseAuth.currentUser()).phoneNumber ?? '';
   }
 
-  Future<String> verifyPhoneNumber({@required String phoneNumber}) async {
-    // String _verificationId;
+  Future<void> verifyPhoneNumber(
+      {@required String phoneNumber, @required String countryIsoCode}) async {
+    try {
+      if (!await PhoneNumberUtil.isValidPhoneNumber(
+          phoneNumber: phoneNumber, isoCode: countryIsoCode)) {
+        throw Exception('Invalid phone number!');
+      }
 
-    final PhoneVerificationCompleted verificationCompleted =
-        (AuthCredential phoneAuthCredential) {
-      _firebaseAuth.signInWithCredential(phoneAuthCredential);
+      final PhoneVerificationCompleted verificationCompleted =
+          (AuthCredential phoneAuthCredential) {
+        _firebaseAuth.signInWithCredential(phoneAuthCredential);
 
-      print('Received phone auth credential: $phoneAuthCredential');
-    };
+        print('Received phone auth credential: $phoneAuthCredential');
+      };
 
-    final PhoneVerificationFailed verificationFailed =
-        (AuthException authException) {
-      print(
-          'Phone number verification failed. Code: ${authException.code}. Message: ${authException.message}');
-    };
+      final PhoneVerificationFailed verificationFailed =
+          (AuthException authException) {
+        print(
+            'Phone number verification failed. Code: ${authException.code}. Message: ${authException.message}');
+      };
 
-    final PhoneCodeSent codeSent =
-        (String verificationId, [int forceResendingToken]) async {
-      print('Please check your phone for the verification code.');
+      final PhoneCodeSent codeSent =
+          (String verificationId, [int forceResendingToken]) async {
+        print('Please check your phone for the verification code.');
 
-      _verificationId = verificationId;
-      print('PhoneCodeSent $_verificationId');
-    };
+        _verificationId = verificationId;
+        print('PhoneCodeSent $_verificationId');
+      };
 
-    final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
-        (String verificationId) {
-      _verificationId = verificationId;
-    };
+      final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
+          (String verificationId) {
+        _verificationId = verificationId;
+      };
 
-    print(phoneNumber);
+      print(phoneNumber);
 
-    // await _firebaseAuth.verifyPhoneNumber(
-    //     phoneNumber: phoneNumber,
-    //     timeout: const Duration(seconds: 5),
-    //     verificationCompleted: verificationCompleted,
-    //     verificationFailed: verificationFailed,
-    //     codeSent: codeSent,
-    //     codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
+      await _firebaseAuth.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          timeout: const Duration(seconds: 0),
+          verificationCompleted: verificationCompleted,
+          verificationFailed: verificationFailed,
+          codeSent: codeSent,
+          codeAutoRetrievalTimeout: codeAutoRetrievalTimeout);
 
-    // return '_verificationId';
-    return _verificationId;
+      // return _verificationId;
+    } catch (e) {
+      print(e.toString());
+      throw (e.toString());
+    }
   }
 
   Future<void> logInWithPhoneNumber({@required String verificationCode}) async {
-    // print('$_verificationId');
-
     try {
       final AuthCredential credential = PhoneAuthProvider.getCredential(
         verificationId: _verificationId,
         smsCode: verificationCode,
       );
 
-      // final FirebaseUser user =
-      //     await _firebaseAuth.signInWithCredential(credential);
-      // final FirebaseUser currentUser = await _firebaseAuth.currentUser();
-      // assert(user.uid == currentUser.uid);
+      final FirebaseUser user =
+          await _firebaseAuth.signInWithCredential(credential);
+      final FirebaseUser currentUser = await _firebaseAuth.currentUser();
+      assert(user.uid == currentUser.uid);
 
-      // user != null
-      //     ? print('Successfully signed in, uid: ' + user.uid)
-      //     : print('Sign in failed');
+      user != null
+          ? print('Successfully signed in, uid: ' + user.uid)
+          : print('Sign in failed');
     } catch (e) {
       print(e.toString());
-      // throw(e.toString());
+      throw (e.toString());
     }
   }
 

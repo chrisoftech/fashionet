@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:fashionet/repositories/repositories.dart';
-import 'package:fashionet/blocs/blocs.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:fashionet/blocs/blocs.dart';
+import 'package:fashionet/repositories/repositories.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class VerifyPhoneNumberForm extends StatefulWidget {
   final UserRepository _userRepository;
@@ -28,10 +28,11 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
   Function(bool) get _onVerifyPhoneNumberSuccess =>
       widget._onVerifyPhoneNumberSuccess;
 
-  GlobalKey<State> _formKey = GlobalKey<State>();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _phoneNumberController = TextEditingController();
 
   String _selectedCountryCode;
+  String _countryIsoCode;
 
   @override
   void initState() {
@@ -45,40 +46,14 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
   }
 
   void onVerifyPhoneNumberButtonPressed() {
+    if (!_formKey.currentState.validate()) return;
+
     final String _phoneNumberWithCode =
         '$_selectedCountryCode${_phoneNumberController.text}';
 
     _verificationBloc.onVerifyPhoneNumberButtonPressed(
-        phoneNumber: _phoneNumberWithCode);
+        phoneNumber: _phoneNumberWithCode, countryIsoCode: _countryIsoCode);
   }
-
-  // Widget _buildBlocBuilderContent() {
-  //   return Container(
-  //     height: _deviceHeight,
-  //     width: _deviceWidth,
-  //     child: Center(
-  //       child: SingleChildScrollView(
-  //         child: Form(
-  //           key: _formKey,
-  //           child: Column(
-  //             children: <Widget>[
-  //               TextFormField(
-  //                 controller: _phoneNumberController,
-  //                 decoration: InputDecoration(),
-  //               ),
-  //               RaisedButton(
-  //                 child: Text('Verify phone number'),
-  //                 onPressed: isVerificationButtonEnabled(state: state)
-  //                     ? onVerifyPhoneNumberButtonPressed
-  //                     : null,
-  //               )
-  //             ],
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildLoginFormTitle() {
     return Column(
@@ -111,8 +86,10 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
     return Row(
       children: <Widget>[
         CountryCodePicker(
-          onChanged: (CountryCode countryCode) =>
-              _selectedCountryCode = countryCode.toString(),
+          onChanged: (CountryCode countryCode) {
+            _countryIsoCode = countryCode.code;
+            _selectedCountryCode = countryCode.toString();
+          },
           initialSelection: '+233',
           favorite: ['+233'],
           showCountryOnly: false,
@@ -123,7 +100,10 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
           child: TextFormField(
             keyboardType: TextInputType.number,
             controller: _phoneNumberController,
-            style: TextStyle(color: Colors.white, fontSize: 30.0),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.0,
+                fontWeight: FontWeight.w500),
             decoration:
                 InputDecoration(contentPadding: EdgeInsets.only(bottom: 5.0)),
             validator: (String value) {
@@ -228,19 +208,7 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
       bloc: _verificationBloc,
       listener: (BuildContext context, VerificationState state) {
         if (state.isFailure) {
-          Scaffold.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Text('Verification Failure'), Icon(Icons.error)],
-                ),
-                backgroundColor: Colors.red,
-              ),
-            );
-        }
-        if (state.isSubmitting) {
+          _onVerifyPhoneNumberSuccess(false);
           Scaffold.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -248,7 +216,24 @@ class _VerifyPhoneNumberFormState extends State<VerifyPhoneNumberForm> {
                 content: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Sending verification code...'),
+                    Text('Sorry, we could not validate this number!'),
+                    Icon(Icons.error)
+                  ],
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+        }
+        if (state.isSubmitting) {
+          _onVerifyPhoneNumberSuccess(false);
+          Scaffold.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Validating your phone number...'),
                     CircularProgressIndicator(),
                   ],
                 ),

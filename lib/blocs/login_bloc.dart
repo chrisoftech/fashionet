@@ -94,15 +94,10 @@ class LoginWithCredentialsPressed extends LoginEvent {
 // login bloc
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final UserRepository _userRepository;
-  final AuthenticationBloc _authenticationBloc;
 
-  LoginBloc(
-      {@required UserRepository userRepository,
-      @required AuthenticationBloc authenticationBloc})
+  LoginBloc({@required UserRepository userRepository})
       : assert(userRepository != null),
-        assert(authenticationBloc != null),
-        _userRepository = userRepository,
-        _authenticationBloc = authenticationBloc;
+        _userRepository = userRepository;
 
   @override
   LoginState get initialState => LoginState.empty();
@@ -126,8 +121,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     yield LoginState.loading();
 
     try {
-      await _userRepository.logInWithPhoneNumber(verificationCode: verificationCode);
-      _authenticationBloc.onLoggedIn();
+      await _userRepository.logInWithPhoneNumber(
+          verificationCode: verificationCode);
       yield LoginState.success();
     } catch (e) {
       yield LoginState.failure();
